@@ -2,242 +2,309 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Robot Mate: Multidispositivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matecarrera - Mejorado</title>
     <style>
         :root {
-            --grass: #2ecc71;
-            --road: #34495e;
-            --sky: #87CEEB;
+            --sky-blue: #70cfff;
+            --grass-green: #3a9b3a;
+            --road-gray: #555;
+            --gold: #ffcc00;
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--sky);
+            margin: 0;
+            padding: 0;
             overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--sky-blue);
+            text-align: center;
+        }
+
+        #main-title {
+            color: white;
+            font-size: 3rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-top: 20px;
+        }
+
+        #score-counter {
+            color: #333;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        #game-area {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            align-items: center;
         }
 
-        /* PAISAJE RESPONSIVO */
-        #game-world {
-            position: relative;
-            flex: 1;
-            background: linear-gradient(to bottom, var(--sky) 0%, var(--sky) 70%, var(--grass) 70%, var(--grass) 100%);
-            display: flex;
-            align-items: flex-end;
-            justify-content: flex-start;
-            padding-bottom: 20px;
-        }
-
-        /* Nubes */
         .cloud {
             position: absolute;
-            background: white;
+            background: rgba(255, 255, 255, 0.8);
             border-radius: 50px;
-            height: 40px;
-            width: 100px;
-            opacity: 0.8;
-            animation: move linear infinite;
+            animation: moveClouds linear infinite;
         }
-        @keyframes move { from { left: -150px; } to { left: 110vw; } }
-
-        /* ROBOT MATE */
-        #robot {
-            font-size: clamp(40px, 10vw, 80px); /* Tamaño fluido */
-            position: relative;
-            left: 5%;
-            transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 10;
-            filter: drop-shadow(2px 5px 2px rgba(0,0,0,0.2));
+        @keyframes moveClouds {
+            from { left: 110%; } to { left: -20%; }
         }
 
-        /* INTERFAZ DE USUARIO */
-        #ui-layer {
+        #ground {
             position: absolute;
-            top: 0;
+            bottom: 0;
             width: 100%;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            color: white;
-            font-weight: bold;
-            font-size: clamp(16px, 4vw, 24px);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            height: 40vh;
+            background-color: var(--grass-green);
+            background-image: linear-gradient(var(--grass-green) 50%, #2e7d2e 50%);
+            background-size: 100% 20px;
         }
 
-        /* TARJETA DE OPERACIÓN */
-        #card-container {
+        #track {
             position: absolute;
-            top: 50%;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 100%;
+            background: repeating-linear-gradient(90deg, #fff 0, #fff 10px, transparent 10px, transparent 40px), var(--road-gray);
+            clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+        }
+
+        #finish-line {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 30px;
+            background-image: linear-gradient(45deg, #fff 25%, transparent 25%), linear-gradient(-45deg, #fff 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #fff 75%), linear-gradient(-45deg, transparent 75%, #fff 75%);
+            background-size: 20px 20px;
+            background-color: #333;
+        }
+
+        #robot-driver {
+            position: absolute;
+            bottom: 5vh;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 120px;
+            transition: bottom 0.5s ease-out;
+            z-index: 10;
+        }
+
+        #math-box {
+            position: absolute;
+            top: 35vh;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 400px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            border: 5px solid #f1c40f;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border: 4px solid #444;
+            min-width: 300px;
+            z-index: 20;
         }
 
-        #math-text { font-size: 2rem; margin-bottom: 15px; color: #333; }
+        #operation-text { font-size: 2rem; color: #333; margin-bottom: 20px; font-weight: bold;}
         
-        input {
-            width: 100%;
-            padding: 15px;
-            font-size: 1.5rem;
-            border-radius: 10px;
-            border: 2px solid #ddd;
-            margin-bottom: 10px;
+        #answer-input {
+            width: 100px;
+            font-size: 1.8rem;
+            padding: 10px;
             text-align: center;
-            outline: none;
+            border: 3px solid #ccc;
+            border-radius: 8px;
         }
 
-        button {
-            width: 100%;
-            padding: 15px;
-            background: #e67e22;
+        #submit-btn {
+            font-size: 1.5rem;
+            padding: 12px 24px;
+            background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 1.2rem;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
-            transition: transform 0.1s;
         }
-        button:active { transform: scale(0.95); }
 
-        /* MODAL FINAL */
-        #modal {
+        #results-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.9);
             z-index: 100;
-            flex-direction: column;
+            color: white;
             justify-content: center;
             align-items: center;
-            color: white;
-            padding: 20px;
+            flex-direction: column;
         }
 
-        .btn-share { background: #3498db; margin-top: 10px; }
+        #final-message { font-size: 3rem; margin-bottom: 10px; }
+        #percentage-text { font-size: 5rem; color: var(--gold); font-weight: bold; margin-bottom: 30px; }
+
+        .game-btn {
+            font-size: 1.2rem;
+            padding: 15px 30px;
+            margin: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-restart { background-color: #2196F3; color: white; }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(-50%, -50%) translateX(0); }
+            25% { transform: translate(-50%, -50%) translateX(-10px); }
+            75% { transform: translate(-50%, -50%) translateX(10px); }
+        }
     </style>
 </head>
 <body>
 
-<div id="game-world">
-    <div id="ui-layer">
-        <div>Robot Mate 🏎️</div>
-        <div>Meta: <span id="progress">0</span> / 10</div>
+    <div id="game-area">
+        <h1 id="main-title">🏎️ Matecarrera</h1>
+        <p id="score-counter">Aciertos: <span id="hits">0</span> / 10</p>
+
+        <div id="ground">
+            <div id="track">
+                <div id="finish-line"></div>
+            </div>
+        </div>
+
+        <div id="robot-driver">🏎️</div>
+
+        <div id="math-box">
+            <div id="operation-text">¡Dale a Responder!</div>
+            <input type="number" id="answer-input" placeholder="?">
+            <button id="submit-btn" onclick="checkAnswer()">Responder</button>
+        </div>
     </div>
 
-    <!-- Nubes -->
-    <div class="cloud" style="top: 10%; animation-duration: 25s;"></div>
-    <div class="cloud" style="top: 25%; animation-duration: 18s; width: 140px;"></div>
-
-    <div id="robot">🤖</div>
-
-    <div id="card-container">
-        <div id="math-text">Cargando...</div>
-        <input type="number" id="user-input" pattern="\d*" inputmode="numeric" placeholder="?">
-        <button onclick="check()">¡ENVIAR!</button>
+    <div id="results-overlay">
+        <h2 id="final-message">Resultado</h2>
+        <p id="percentage-text">0%</p>
+        <div>
+            <button class="game-btn btn-restart" onclick="restartGame()">Intentar de nuevo</button>
+        </div>
     </div>
-</div>
 
-<div id="modal">
-    <h1 id="result-title">¡ERES UN GANADOR!</h1>
-    <h2 id="result-percent">100%</h2>
-    <p style="margin: 20px 0;">¡Has cruzado la meta!</p>
-    <button onclick="restart()">Jugar de nuevo</button>
-    <button class="btn-share" onclick="share()">Compartir con amigos 📤</button>
-</div>
+    <script>
+        let score = 0;
+        let currentLevel = 0;
+        const totalLevels = 10;
+        let currentCorrectAnswer = 0;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-<script>
-    let score = 0;
-    let total = 0;
-    let target = 10;
-    let currentAns = 0;
-
-    function playCoin() {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const g = ctx.createGain();
-        osc.frequency.setValueAtTime(900, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
-        g.gain.setValueAtTime(0.1, ctx.currentTime);
-        g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4);
-        osc.connect(g); g.connect(ctx.destination);
-        osc.start(); osc.stop(ctx.currentTime + 0.4);
-    }
-
-    function generate() {
-        if (total >= target) { finish(); return; }
-        
-        const types = ['+', '-', '*', '/'];
-        const type = types[Math.floor(Math.random() * types.length)];
-        let a, b;
-
-        if(type === '+') { a = r(10,99); b = r(10,99); currentAns = a+b; }
-        else if(type === '-') { a = r(50,100); b = r(1,49); currentAns = a-b; }
-        else if(type === '*') { a = r(2,9); b = r(2,9); currentAns = a*b; }
-        else { b = r(2,10); a = b * r(1,10); currentAns = a/b; }
-
-        document.getElementById('math-text').innerText = `${a} ${type === '*' ? '×' : type === '/' ? '÷' : type} ${b} = ?`;
-        document.getElementById('user-input').value = '';
-        document.getElementById('user-input').focus();
-    }
-
-    function r(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-
-    function check() {
-        const val = parseInt(document.getElementById('user-input').value);
-        if (val === currentAns) {
-            score++;
-            playCoin();
-            // Mover robot proporcionalmente
-            document.getElementById('robot').style.left = (5 + (score * 8.5)) + "%";
+        // --- SISTEMA DE SONIDOS ---
+        function playTone(freq, type, duration, vol = 0.2) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
         }
-        total++;
-        document.getElementById('progress').innerText = score;
-        generate();
-    }
 
-    // Soporte para tecla Enter
-    document.getElementById('user-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') check();
-    });
-
-    function finish() {
-        const p = (score / target) * 100;
-        document.getElementById('modal').style.display = 'flex';
-        document.getElementById('result-percent').innerText = p + "% Logrado";
-        document.getElementById('result-title').innerText = p >= 60 ? "¡ERES UN GANADOR!" : "¡SIGUE PRACTICANDO!";
-    }
-
-    function restart() {
-        score = 0; total = 0;
-        document.getElementById('progress').innerText = "0";
-        document.getElementById('robot').style.left = "5%";
-        document.getElementById('modal').style.display = 'none';
-        generate();
-    }
-
-    function share() {
-        const msg = `¡Saqué ${score}/10 en Robot Mate! ¿Puedes superarme?`;
-        if (navigator.share) {
-            navigator.share({ title: 'Robot Mate', text: msg, url: window.location.href });
-        } else {
-            alert(msg);
+        function playCoinSound() {
+            playTone(987, 'sine', 0.1);
+            setTimeout(() => playTone(1318, 'sine', 0.2), 50);
         }
-    }
 
-    generate();
-</script>
+        function playErrorSound() {
+            playTone(150, 'square', 0.3, 0.1);
+        }
+
+        function playWinFanfare() {
+            [523, 659, 783, 1046].forEach((f, i) => {
+                setTimeout(() => playTone(f, 'triangle', 0.4), i * 150);
+            });
+        }
+
+        function playLoseSound() {
+            [300, 250, 200].forEach((f, i) => {
+                setTimeout(() => playTone(f, 'sawtooth', 0.5), i * 200);
+            });
+        }
+
+        // --- LÓGICA DEL JUEGO ---
+        function generateOperation() {
+            if (currentLevel >= totalLevels) {
+                showResults();
+                return;
+            }
+            const ops = ['+', '-', '*', '/'];
+            const op = ops[Math.floor(Math.random() * ops.length)];
+            let a, b;
+            if (op === '+') { a = rand(10, 250); b = rand(10, 250); currentCorrectAnswer = a + b; }
+            else if (op === '-') { a = rand(100, 400); b = rand(10, 90); currentCorrectAnswer = a - b; }
+            else if (op === '*') { a = rand(2, 12); b = rand(2, 12); currentCorrectAnswer = a * b; }
+            else { b = rand(2, 10); a = b * rand(1, 10); currentCorrectAnswer = a / b; }
+
+            document.getElementById('operation-text').innerText = `¿Cuánto es ${a} ${op === '*' ? 'x' : op === '/' ? '÷' : op} ${b}?`;
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').focus();
+        }
+
+        function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+        function checkAnswer() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const userAnswer = parseInt(document.getElementById('answer-input').value);
+
+            if (userAnswer === currentCorrectAnswer) {
+                score++;
+                playCoinSound();
+                document.getElementById('robot-driver').style.bottom = `${5 + (score * 3)}vh`;
+            } else {
+                playErrorSound();
+                document.getElementById('math-box').style.animation = 'shake 0.3s';
+                setTimeout(() => document.getElementById('math-box').style.animation = '', 300);
+            }
+
+            currentLevel++;
+            document.getElementById('hits').innerText = score;
+            generateOperation();
+        }
+
+        function showResults() {
+            const percentage = (score / totalLevels) * 100;
+            const overlay = document.getElementById('results-overlay');
+            const msg = document.getElementById('final-message');
+            
+            overlay.style.display = 'flex';
+            document.getElementById('percentage-text').innerText = `${percentage}%`;
+
+            if (percentage >= 70) {
+                msg.innerText = "¡Eres un ganador! 🏆";
+                msg.style.color = "#4CAF50";
+                playWinFanfare();
+            } else {
+                msg.innerText = "Necesitas mejorar 🚩";
+                msg.style.color = "#FF5252";
+                playLoseSound();
+            }
+        }
+
+        function restartGame() {
+            score = 0;
+            currentLevel = 0;
+            document.getElementById('hits').innerText = "0";
+            document.getElementById('results-overlay').style.display = 'none';
+            document.getElementById('robot-driver').style.bottom = '5vh';
+            generateOperation();
+        }
+
+        document.getElementById('answer-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkAnswer(); });
+        generateOperation();
+    </script>
 </body>
 </html>
